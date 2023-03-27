@@ -1,8 +1,9 @@
 ---
 title: "DS311 - R Lab Assignment"
 author: "Seyoung Kim"
-date: "`r Sys.Date()`"
-output: 
+date: "3/26/2023"
+output:
+  pdf_document: default
   html_document:
     theme: united
     highlight: tango
@@ -11,6 +12,8 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(repos = list(CRAN="http://cran.rstudio.com/"))
+tinytex::install_tinytex(force=TRUE)
 ```
 
 ## R Assignment 1
@@ -35,10 +38,11 @@ a. Report the number of variables and observations in the data set.
 
 ```{r}
 # Enter your code here!
-
+var<-dim(mtcars)[1]
+obser<-dim(mtcars)[2]
 
 # Answer:
-print("There are total of _____ variables and _____ observations in this data set.")
+print(paste("There are total of",var,"variables and ",obser,"observations in this data set."))
 ```
 
 
@@ -47,10 +51,14 @@ b. Print the summary statistics of the data set and report how many discrete and
 
 ```{r}
 # Enter your code here!
+summary(mtcars)
 
 
 # Answer:
-print("There are _____ discrete variables and _____ continuous variables in this data set.")
+
+#discrete:cyl, vs,am,gear,carb
+#continuous: mpg,disp,hp, drat,wt,qsec 
+print("There are 5 discrete variables and 6 continuous variables in this data set.")
 ```
 
 
@@ -60,10 +68,12 @@ c. Calculate the mean, variance, and standard deviation for the variable **mpg**
 ```{r}
 # Enter your code here!
 
+m <- mean(mtcars$mpg)
+v <- var(mtcars$mpg)
+s <- sd(mtcars$mpg)
 
 
-
-# print(paste("The average of Mile Per Gallon from this data set is ",  , " with variance ",  , " and standard deviation",  , "."))
+print(paste("The average of Mile Per Gallon from this data set is ",m  , " with variance ",  v, " and standard deviation",  s, "."))
 ```
 
 
@@ -72,6 +82,20 @@ d. Create two tables to summarize 1) average mpg for each cylinder class and 2) 
 
 ```{r}
 # Enter your code here!
+
+install.packages("magrittr") # package installations are only needed the first time you use it
+install.packages("dplyr")    # alternative installation of the %>%
+library(magrittr) # needs to be run every time you start R and want to use %>%
+library(dplyr)   
+
+mtcars %>%
+  group_by(cyl) %>%
+  summarize(AVGMPG=mean(mpg))
+
+
+mtcars %>%
+  group_by(gear) %>%
+  summarize(AVGMPG=mean(mpg))
 
 
 
@@ -83,10 +107,12 @@ d. Create two tables to summarize 1) average mpg for each cylinder class and 2) 
 e. Create a crosstab that shows the number of observations belong to each cylinder and gear class combinations. The table should show how many observations given the car has 4 cylinders with 3 gears, 4 cylinders with 4 gears, etc. Report which combination is recorded in this data set and how many observations for this type of car.
 
 ```{r}
-# Enter your code here!
+Cyl<-mtcars$cyl
+Gear<-mtcars$gear
 
+table(Cyl,Gear)
 
-print("The most common car type in this data set is car with ____ cylinders and ____ gears. There are total of _____ cars belong to this specification in the data set.")
+print("The most common car type in this data set is car with 8 cylinders and 3 gears. There are total of 12 cars belong to this specification in the data set.")
 ```
 
 
@@ -105,24 +131,25 @@ data("PlantGrowth")
 # Head of the data set
 head(PlantGrowth)
 
+
 # Enter your code here!
 
-
+boxplot(weight ~ group, data = PlantGrowth,main="plant group and growth",xlab="group",ylab="weight")
 ```
 
 Result:
 
 => Report a paragraph to summarize your findings from the plot!
-
+The tallest group is trt2, and the shortest group is trt1. The trt1 group has the greatest variability in weight, while the trt2 group has the least variability in weight.
 
 
 b. Using the **mtcars** data set, plot the histogram for the column **mpg** with 10 breaks. Give labels to the title, x-axis, and y-axis on the graph. Report the most observed mpg class from the data set.
 
 ```{r}
 
+hist(mtcars$mpg,breaks=10,main="MPG of the cars",xlab="mpg",ylab="frequency")
 
-
-print("Most of the cars in this data set are in the class of ______ mile per gallon.")
+print("Most of the cars in this data set are in the class of 15 mile per gallon.")
 ```
 
 
@@ -138,13 +165,13 @@ head(USArrests)
 
 # Enter your code here!
 
-
+plot(USArrests$Murder,USArrests$Assault,main="Murder and Assault",xlab="Murder",ylab="Assault")
 ```
 
 Result:
 
 => Report a paragraph to summarize your findings from the plot!
-
+As the value of Murder increases, there is a tendency for the value of Assault to also increase.
 
 
 ***
@@ -155,11 +182,12 @@ Download the housing data set from www.jaredlander.com and find out what explain
 
 Note: Check your working directory to make sure that you can download the data into the data folder. 
 
-```{r, echo=FALSE}
+```{r}
 # Load and clean the housing data set 
-download.file(url='https://www.jaredlander.com/data/housing.csv',
-              destfile='data/housing.csv', mode='wb')
-housingData <- read.csv('data/housing.csv')
+ wd1 <- getwd()
+ paste("Current Working Directory: ", wd1)
+
+housingData <- read.csv('./data/housing.csv')
 housingData <- subset(housingData, 
                       select = c("Neighborhood", "Market.Value.per.SqFt", "Boro", "Year.Built"))
 housingData <- na.omit(housingData)                   
@@ -172,6 +200,8 @@ a. Create your own descriptive statistics and aggregation tables to summarize th
 head(housingData)
 
 # Enter your code here!
+boxplot(Market.Value.per.SqFt ~ Boro,main="Market value per SqFt and Boro", data = housingData,xlab="Boro",ylab="Market.Value.per.SqFt")
+
 
 
 ```
@@ -180,12 +210,18 @@ b. Create multiple plots to demonstrates the correlations between different vari
 
 ```{r}
 # Enter your code here!
+install.packages("ggplot")  
+library(ggplot2)
+g<-ggplot(housingData,aes(x=Year.Built,y=Market.Value.per.SqFt))+ geom_point(aes(color=Boro))
+
+g+ facet_wrap(~Boro)+ labs(x = "Year Built", y = "Market Value per SqFt", title = "Housing Data")
 
 
 ```
 
 c. Write a summary about your findings from this exercise.
 
-=> Enter your answer here!
+=> I used plot,boxplot,hist functions to visualize data. Also, I used  facet_wrap function to categorize the data by Boro. 
+
 
 
