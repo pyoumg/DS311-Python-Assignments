@@ -186,7 +186,9 @@ Note: Check your working directory to make sure that you can download the data i
 # Load and clean the housing data set 
  wd1 <- getwd()
  paste("Current Working Directory: ", wd1)
-
+# Load and clean the housing data set 
+download.file(url='https://www.jaredlander.com/data/housing.csv',
+              destfile='data/housing.csv', mode='wb')
 housingData <- read.csv('./data/housing.csv')
 housingData <- subset(housingData, 
                       select = c("Neighborhood", "Market.Value.per.SqFt", "Boro", "Year.Built"))
